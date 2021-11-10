@@ -54,15 +54,20 @@ public class UserConverter extends BaseConverter<User, SignupRequest> {
                 roles.add(userRole);
             } else {
                 strRoles.forEach(role -> {
-                    switch (role) {
-                        case "ADMIN":
-                            Role adminRole = roleRepository.findByRole(ERole.ROLE_TEACHER)
+                    switch (role.toUpperCase()) {
+                        case "TEACHER":
+                            Role teacherRole = roleRepository.findByRole(ERole.ROLE_TEACHER)
                                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                            roles.add(adminRole);
-                        default:
+                            roles.add(teacherRole);
+                        case "USER":
                             Role userRole = roleRepository.findByRole(ERole.ROLE_USER)
                                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                             roles.add(userRole);
+                            break;
+                        default:
+                            Role defaultRole = roleRepository.findByRole(ERole.ROLE_USER)
+                                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                            roles.add(defaultRole);
                     }
                 });
             }

@@ -114,6 +114,7 @@ public class AuthController {
         }
 
         User savedUser = userBaseService.save(userConverter.toEntity().apply(signupRequest));
+        System.out.println(savedUser);
 
         return ResponseEntity.ok(new MessageResponse("Użytkownik poprawnie zarejestrowany."));
     }

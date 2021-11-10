@@ -54,7 +54,7 @@ public class User extends BaseEntity {
     @Column(name = "delete_date")
     private LocalDateTime deleteDate;
 
-    @Column(name = "enabled", columnDefinition = "boolean default false")
+    @Column(name = "enabled", columnDefinition = "boolean default 1")
     @org.hibernate.annotations.Generated(GenerationTime.INSERT)
     private Boolean enabled;
 
