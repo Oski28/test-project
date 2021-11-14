@@ -26,8 +26,7 @@ public class Answer extends BaseEntity {
     @Size(min = 1, max = 300, message = "Text must contain between 1 and 300 characters.")
     private String text;
 
-    @Column(name = "correct", columnDefinition = "boolean default false")
-    @Generated(GenerationTime.INSERT)
+    @Column(name = "correct")
     private Boolean correct;
 
     /* RELATIONS */

@@ -1,7 +1,6 @@
 package com.example.testproject.user.web;
 
 import com.example.testproject.exceptions.DuplicateObjectException;
-import com.example.testproject.payload.request.SignupRequest;
 import com.example.testproject.role.web.RoleService;
 import com.example.testproject.shared.BaseController;
 import com.example.testproject.shared.BaseService;
@@ -20,10 +19,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
-import java.net.URI;
 
 @RestController
 @RequestMapping(path = "/api/users")

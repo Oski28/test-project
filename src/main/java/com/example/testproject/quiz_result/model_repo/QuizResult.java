@@ -13,6 +13,8 @@ import lombok.ToString;
 import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -23,6 +25,11 @@ import java.util.Set;
 @Entity(name = "quiz_result")
 @Table(name = "quiz_result")
 public class QuizResult extends BaseEntity {
+
+    @Column(name = "name", nullable = false, length = 100)
+    @NotBlank(message = "Name cannot be blank.")
+    @Size(min = 1, max = 100, message = "Name must contain between 1 and 100 characters.")
+    private String name;
 
     @Column(name = "total_points")
     @Min(value = 0, message = "Points must be natural number.")

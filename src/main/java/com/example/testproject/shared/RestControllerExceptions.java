@@ -21,7 +21,7 @@ import java.util.Objects;
 @RestControllerAdvice
 public class RestControllerExceptions {
 
-    @ExceptionHandler(value = {TokenRefreshException.class, OperationAccessDeniedException.class})
+   @ExceptionHandler(value = {TokenRefreshException.class, OperationAccessDeniedException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorMessage handleForbidden(RuntimeException exception, WebRequest request) {
         return new ErrorMessage(HttpStatus.FORBIDDEN.value(),

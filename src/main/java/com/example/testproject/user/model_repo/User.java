@@ -86,5 +86,4 @@ public class User extends BaseEntity {
     @ToString.Exclude
     private List<Test> availableTests;
 
-    //TODO results
 }

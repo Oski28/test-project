@@ -12,6 +12,8 @@ import lombok.ToString;
 import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +25,11 @@ import java.util.Set;
 @Entity(name = "test")
 @Table(name = "test")
 public class Test extends BaseEntity {
+
+    @Column(name = "name", nullable = false, length = 100)
+    @NotBlank(message = "Name cannot be blank.")
+    @Size(min = 1, max = 100, message = "Name must contain between 1 and 100 characters.")
+    private String name;
 
     @Column(name = "number_of_questions")
     @Min(value = 1, message = "Number of questions must be more than 0")
@@ -57,7 +64,7 @@ public class Test extends BaseEntity {
     @ToString.Exclude
     private Set<User> users;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "test_question",
             joinColumns = {@JoinColumn(name = "id_test", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "id_question", referencedColumnName = "id")},

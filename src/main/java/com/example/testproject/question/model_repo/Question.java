@@ -1,7 +1,6 @@
 package com.example.testproject.question.model_repo;
 
 import com.example.testproject.answer.model_repo.Answer;
-import com.example.testproject.quiz_result.model_repo.QuizResult;
 import com.example.testproject.result_answer.model_repo.ResultAnswer;
 import com.example.testproject.shared.BaseEntity;
 import com.example.testproject.test.model_repo.Test;
@@ -51,7 +50,7 @@ public class Question extends BaseEntity {
     @ToString.Exclude
     private Set<ResultAnswer> resultAnswers;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private List<Answer> answers;
