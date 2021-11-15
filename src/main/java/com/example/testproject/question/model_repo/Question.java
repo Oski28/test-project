@@ -43,21 +43,29 @@ public class Question extends BaseEntity {
     @ManyToMany(mappedBy = "questions", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private List<Test> tests;
+    private Set<Test> tests;
 
     @OneToMany(mappedBy = "question", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<ResultAnswer> resultAnswers;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "question", cascade = {CascadeType.REMOVE}, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private List<Answer> answers;
+    private Set<Answer> answers;
 
     @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER, optional = false)
     @JoinColumn(nullable = false, name = "creator_id", referencedColumnName = "id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private User user;
+
+    public void setAnswers(Set<Answer> newAnswers) {
+        if (this.answers == null) {
+            this.answers = newAnswers;
+        }
+        this.answers.retainAll(newAnswers);
+        this.answers.addAll(newAnswers);
+    }
 }

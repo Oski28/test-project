@@ -27,7 +27,7 @@ public class QuestionConverter extends BaseConverter<Question, QuestionDto> {
             question.setText(dto.getText());
             question.setPoints(dto.getPoints());
             question.setType(dto.getType());
-            question.setAnswers(dto.getAnswers().stream().map(this.answerConverter.toEntity()).collect(Collectors.toList()));
+            question.setAnswers(dto.getAnswers().stream().map(this.answerConverter.toEntity()).collect(Collectors.toSet()));
 
             return question;
         };

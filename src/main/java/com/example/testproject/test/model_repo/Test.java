@@ -64,14 +64,14 @@ public class Test extends BaseEntity {
     @ToString.Exclude
     private Set<User> users;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "test_question",
             joinColumns = {@JoinColumn(name = "id_test", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "id_question", referencedColumnName = "id")},
             indexes = {@Index(name = "test_question_index", columnList = "id_test,id_question", unique = true)})
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
-    private List<Question> questions;
+    private Set<Question> questions;
 
     @OneToMany(mappedBy = "test", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude

@@ -2,15 +2,20 @@ package com.example.testproject.answer.web;
 
 import com.example.testproject.answer.model_repo.Answer;
 import com.example.testproject.answer.model_repo.AnswerRepository;
+import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.shared.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 @Service
 public class AnswerServiceImplementation implements BaseService<Answer>, AnswerService {
@@ -63,5 +68,14 @@ public class AnswerServiceImplementation implements BaseService<Answer>, AnswerS
             answers.remove(answer);
         }
         return randAnswers;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public void removeAllFromQuestion(Question question) {
+        Set<Answer> answers = question.getAnswers();
+        for (Answer answer : answers) {
+            this.answerRepository.delete(answer);
+        }
     }
 }

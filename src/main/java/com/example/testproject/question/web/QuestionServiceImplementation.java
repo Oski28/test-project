@@ -1,6 +1,8 @@
 package com.example.testproject.question.web;
 
+import com.example.testproject.answer.model_repo.Answer;
 import com.example.testproject.answer.web.AnswerServiceImplementation;
+import com.example.testproject.exceptions.OperationAccessDeniedException;
 import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.question.model_repo.QuestionRepository;
 import com.example.testproject.shared.BaseService;
@@ -17,9 +19,8 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionServiceImplementation implements BaseService<Question>, QuestionService {
@@ -61,13 +62,41 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
     @Override
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean update(Long id, Question entity) {
+        if (isExists(id)) {
+            User user = this.userService.getAuthUser();
+            Question question = getById(id);
+            if (!question.getUser().equals(user)){
+                throw new OperationAccessDeniedException("Brak dostępu do pytania o id " + id);
+            }
+            this.answerService.removeAllFromQuestion(question);
+            question.setPoints(entity.getPoints());
+            question.setType(entity.getType());
+            question.setText(entity.getText());
+            for (Answer answer : entity.getAnswers()) {
+                answer.setQuestion(question);
+                this.answerService.save(answer);
+            }
+            question.setAnswers(entity.getAnswers());
+            return true;
+        }
         return false;
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean delete(Long id) {
-        return false;
+        if (isExists(id)) {
+            User user = this.userService.getAuthUser();
+            Question question = getById(id);
+            if (!question.getUser().equals(user)){
+                throw new OperationAccessDeniedException("Brak dostępu do pytania o id " + id);
+            }
+            this.testService.removeQuestionForAllTests(question);
+            this.questionRepository.delete(question);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -105,7 +134,7 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
     public List<Question> getQuestionsForTest(Long testId) {
         Test test = this.testService.getById(testId);
         Random random = new Random();
-        List<Question> testQuestions = test.getQuestions();
+        List<Question> testQuestions = new ArrayList<>(test.getQuestions());
         List<Question> randQuestions = new ArrayList<>();
         for (int i = 0; i < test.getNumberOfQuestions(); i++) {
             int randomNumber = random.nextInt(testQuestions.size());
@@ -114,7 +143,7 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
             testQuestions.remove(question);
         }
         for (int i = 0; i < randQuestions.size(); i++) {
-            randQuestions.get(i).setAnswers(this.answerService.randAnswers(randQuestions.get(i).getAnswers(), randQuestions.get(i).getAnswers().size()));
+            randQuestions.get(i).setAnswers(this.answerService.randAnswers(randQuestions.get(i).getAnswers().stream().collect(Collectors.toList()), randQuestions.get(i).getAnswers().size()).stream().collect(Collectors.toSet()));
         }
         return randQuestions;
     }

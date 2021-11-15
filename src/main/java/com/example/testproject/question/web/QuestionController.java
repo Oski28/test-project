@@ -97,12 +97,13 @@ public class QuestionController extends BaseController<Question> {
         Question question = this.questionConverter.toEntity().apply(dto);
         User user = this.userService.getAuthUser();
         question.setUser(user);
-        Question savedQuestion = this.questionService.save(question);
 
-        for (Answer answer : savedQuestion.getAnswers()) {
-            answer.setQuestion(savedQuestion);
-            Answer savedAnswer = this.answerService.save(answer);
+        for (Answer answer : question.getAnswers()) {
+            answer.setQuestion(question);
+            this.answerService.save(answer);
         }
+
+        Question savedQuestion = this.questionService.save(question);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(savedQuestion.getId()).toUri();
@@ -112,6 +113,20 @@ public class QuestionController extends BaseController<Question> {
     /* PATCH */
 
     /* PUT */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<?> update(@PathVariable final Long id, @RequestBody @Valid final QuestionDto dto) {
+        return super.update(id, this.questionConverter.toEntity().apply(dto));
+    }
 
     /* DELETE */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<?> delete(@PathVariable final Long id) {
+        if (this.questionService.delete(id)) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

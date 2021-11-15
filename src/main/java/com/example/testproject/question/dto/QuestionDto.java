@@ -1,20 +1,14 @@
 package com.example.testproject.question.dto;
 
 import com.example.testproject.answer.dto.AnswerDto;
-import com.example.testproject.answer.model_repo.Answer;
 import com.example.testproject.question.model_repo.QuestionType;
-import com.example.testproject.result_answer.model_repo.ResultAnswer;
-import com.example.testproject.test.model_repo.Test;
-import com.example.testproject.user.model_repo.User;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.util.List;
+import java.util.Set;
 
 @Data
 public class QuestionDto {
@@ -29,5 +23,5 @@ public class QuestionDto {
     @Enumerated(EnumType.STRING)
     private QuestionType type;
 
-    private List<AnswerDto> answers;
+    private Set<AnswerDto> answers;
 }

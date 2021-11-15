@@ -21,7 +21,7 @@ import java.util.Objects;
 @RestControllerAdvice
 public class RestControllerExceptions {
 
-   @ExceptionHandler(value = {TokenRefreshException.class, OperationAccessDeniedException.class})
+  /* @ExceptionHandler(value = {TokenRefreshException.class, OperationAccessDeniedException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorMessage handleForbidden(RuntimeException exception, WebRequest request) {
         return new ErrorMessage(HttpStatus.FORBIDDEN.value(),
@@ -31,7 +31,7 @@ public class RestControllerExceptions {
     }
 
     @ExceptionHandler(value = {DuplicateObjectException.class, DataIntegrityViolationException.class,
-            OldPasswordMismatchException.class})
+            OldPasswordMismatchException.class, CollectionSizeException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorMessage handleConflict(RuntimeException exception, WebRequest request) {
         if (exception instanceof DataIntegrityViolationException) {
@@ -86,5 +86,5 @@ public class RestControllerExceptions {
                 new Date(),
                 "File too large!",
                 request.getDescription(false));
-    }
+    }*/
 }
