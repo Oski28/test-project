@@ -5,6 +5,8 @@ import com.example.testproject.test.model_repo.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -22,4 +24,18 @@ public interface TestService {
     Page<Test> getActiveCreatedTestsForAuthUser(int page, int size, String column, Sort.Direction sortDir);
 
     Page<Test> getNonactiveCreatedTestsForAuthUser(int page, int size, String column, Sort.Direction sortDir);
+
+    Test addQuestionsToTest(List<Long> questionsId, Test test);
+
+    Test addUsersToTest(List<Long> usersId, Test test);
+
+    boolean updateName(Long id, String name);
+
+    boolean updateNumber(Long id, Integer numberOfQuestions);
+
+    boolean updateTime(Long id, Integer time);
+
+    boolean updateStartDate(Long id, LocalDateTime startDate);
+
+    boolean updateEndDate(Long id, LocalDateTime date);
 }

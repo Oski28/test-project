@@ -1,6 +1,7 @@
 package com.example.testproject.test.web;
 
 import com.example.testproject.exceptions.CollectionSizeException;
+import com.example.testproject.exceptions.OperationAccessDeniedException;
 import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.question.web.QuestionServiceImplementation;
 import com.example.testproject.shared.BaseService;
@@ -17,8 +18,12 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class TestServiceImplementation implements BaseService<Test>, TestService {
@@ -58,12 +63,21 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     @Override
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean delete(Long id) {
+        if (isExists(id)) {
+            User user = this.userService.getAuthUser();
+            Test test = this.getById(id);
+            if (!test.getUser().equals(user)) {
+                throw new OperationAccessDeniedException("Nie można ususnąć pytania którego nie jest się właścicielem.");
+            }
+            this.testRepository.delete(test);
+            return true;
+        }
         return false;
     }
 
     @Override
     public Test save(Test entity) {
-        return null;
+        return this.testRepository.save(entity);
     }
 
     @Override
@@ -139,5 +153,102 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
         User user = this.userService.getAuthUser();
         return this.testRepository.getAllByUserAndStartDateAfterOrUserAndEndDateBefore(user, LocalDateTime.now(),
                 user, LocalDateTime.now(), PageRequest.of(page, size, sort));
+    }
+
+    @Override
+    public Test addQuestionsToTest(List<Long> questionsId, Test test) {
+        User user = this.userService.getAuthUser();
+        Set<Question> questionSet = new HashSet<>();
+        for (Long aLong : questionsId) {
+            Question question = this.questionService.getById(aLong);
+            if (question != null) {
+                if (question.getUser().equals(user)) {
+                    questionSet.add(question);
+                } else
+                    throw new OperationAccessDeniedException("Nie jesteś właścicielem pytania które chcesz dodać do testu");
+            }
+        }
+        if (test.getNumberOfQuestions() < questionSet.size()) {
+            throw new CollectionSizeException("Wystąpił błąd w dodawaniu pytań. Ilość pytań nie może być mniejsza niż zbiór dostępnych pytań.");
+        }
+        test.setQuestions(questionSet);
+        return test;
+    }
+
+    @Override
+    public Test addUsersToTest(List<Long> usersId, Test test) {
+        Set<User> users = new HashSet<>();
+        for (Long aLong : usersId) {
+            User user = this.userService.getById(aLong);
+            if (user != null) {
+                users.add(user);
+            }
+        }
+        test.setUsers(users);
+        return test;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public boolean updateName(Long id, String name) {
+        if (isExists(id)) {
+            Test test = getById(id);
+            test.setName(name);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public boolean updateNumber(Long id, Integer numberOfQuestions) {
+        if (isExists(id)) {
+            Test test = getById(id);
+            if (numberOfQuestions > test.getQuestions().size()) {
+                throw new CollectionSizeException("Ilość pytań nie może być mniejsza niż zbiór dostępnych pytań.");
+            }
+            test.setNumberOfQuestions(numberOfQuestions);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public boolean updateTime(Long id, Integer time) {
+        if (isExists(id)) {
+            Test test = getById(id);
+            test.setTime(time);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public boolean updateStartDate(Long id, LocalDateTime startDate) {
+        if (isExists(id)) {
+            Test test = getById(id);
+            if (startDate.isAfter(test.getEndDate()) || LocalDateTime.now().isAfter(startDate)) {
+                throw new DateTimeException("Data rozpoczęcia musi być z przyszłości i być wcześniej niż data zakończenia");
+            }
+            test.setStartDate(startDate);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public boolean updateEndDate(Long id, LocalDateTime date) {
+        if (isExists(id)) {
+            Test test = getById(id);
+            if (test.getStartDate().isAfter(date) || LocalDateTime.now().isAfter(date)) {
+                throw new DateTimeException("Data zakończenia musi być z przyszłości i być później niż data rozpoczęcia");
+            }
+            test.setEndDate(date);
+            return true;
+        }
+        return false;
     }
 }
