@@ -168,7 +168,7 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
                     throw new OperationAccessDeniedException("Nie jesteś właścicielem pytania które chcesz dodać do testu");
             }
         }
-        if (test.getNumberOfQuestions() < questionSet.size()) {
+        if (test.getNumberOfQuestions() > questionSet.size()) {
             throw new CollectionSizeException("Wystąpił błąd w dodawaniu pytań. Ilość pytań nie może być mniejsza niż zbiór dostępnych pytań.");
         }
         test.setQuestions(questionSet);

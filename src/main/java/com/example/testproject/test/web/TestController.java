@@ -119,6 +119,8 @@ public class TestController extends BaseController<Test> {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<?> create(@RequestBody @Valid final TestDto dto) {
         if (dto.getNumberOfQuestions() > dto.getQuestionsId().size()) {
+            System.out.println(dto.getNumberOfQuestions());
+            System.out.println(dto.getQuestionsId().size());
             throw new CollectionSizeException("Ilość pytań nie może być mniejsza niż zbiór dostępnych pytań.");
         }
         if (dto.getStartDate().isAfter(dto.getEndDate()) || LocalDateTime.now().isAfter(dto.getStartDate())) {
