@@ -98,12 +98,12 @@ public class QuestionController extends BaseController<Question> {
         User user = this.userService.getAuthUser();
         question.setUser(user);
 
+        Question savedQuestion = this.questionService.save(question);
+
         for (Answer answer : question.getAnswers()) {
-            answer.setQuestion(question);
+            answer.setQuestion(savedQuestion);
             this.answerService.save(answer);
         }
-
-        Question savedQuestion = this.questionService.save(question);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(savedQuestion.getId()).toUri();
