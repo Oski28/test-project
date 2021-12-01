@@ -1,6 +1,5 @@
 package com.example.testproject.quiz_result.model_repo;
 
-import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.result_answer.model_repo.ResultAnswer;
 import com.example.testproject.shared.BaseEntity;
 import com.example.testproject.test.model_repo.Test;
