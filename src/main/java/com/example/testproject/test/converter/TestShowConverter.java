@@ -1,12 +1,15 @@
 package com.example.testproject.test.converter;
 
+import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.shared.BaseConverter;
 import com.example.testproject.test.dto.TestShowDto;
 import com.example.testproject.test.model_repo.Test;
+import com.example.testproject.user.model_repo.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -36,6 +39,8 @@ public class TestShowConverter extends BaseConverter<Test, TestShowDto> {
             dto.setExecutionSize(test.getQuizResults().size());
             dto.setEndDate(test.getEndDate());
             dto.setAvailableUsersSize(test.getUsers().size());
+            dto.setUsersId(test.getUsers().stream().map(User::getId).collect(Collectors.toList()));
+            dto.setQuestionsId(test.getQuestions().stream().map(Question::getId).collect(Collectors.toList()));
 
             return dto;
         };

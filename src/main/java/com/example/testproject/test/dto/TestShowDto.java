@@ -3,6 +3,7 @@ package com.example.testproject.test.dto;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class TestShowDto {
@@ -17,4 +18,6 @@ public class TestShowDto {
     private Integer availableUsersSize;
     private Integer questionPoolSize;
     private Integer executionSize;
+    private List<Long> usersId;
+    private List<Long> questionsId;
 }
