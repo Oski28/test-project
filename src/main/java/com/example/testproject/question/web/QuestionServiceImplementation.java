@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -133,7 +134,17 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
 
     @Override
     public List<Question> getQuestionsForTest(Long testId) {
+        if (!this.testService.isExists(testId)) {
+            throw new EntityNotFoundException("Brak testu o podanym id " + testId);
+        }
         Test test = this.testService.getById(testId);
+        User user = this.userService.getAuthUser();
+        if (!test.getUsers().contains(user)) {
+            throw new OperationAccessDeniedException("Brak uprawnień do wykonywania testu.");
+        }
+        if (!(test.getStartDate().isBefore(LocalDateTime.now()) && test.getEndDate().isAfter(LocalDateTime.now()))) {
+            throw new OperationAccessDeniedException("Test aktualnie niedostępny.");
+        }
         Random random = new Random();
         List<Question> testQuestions = new ArrayList<>(test.getQuestions());
         List<Question> randQuestions = new ArrayList<>();
