@@ -4,6 +4,7 @@ import com.example.testproject.exceptions.CollectionSizeException;
 import com.example.testproject.exceptions.OperationAccessDeniedException;
 import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.question.web.QuestionServiceImplementation;
+import com.example.testproject.shared.BaseEntity;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.test.model_repo.Test;
 import com.example.testproject.test.model_repo.TestRepository;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class TestServiceImplementation implements BaseService<Test>, TestService {
@@ -57,6 +59,21 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     @Override
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean update(Long id, Test entity) {
+        if (isExists(id)) {
+            User user = userService.getAuthUser();
+            Test test = getById(id);
+            if (!test.getUser().equals(user)) {
+                throw new OperationAccessDeniedException("Brak uprawnień do edycji testu.");
+            }
+            test.setTime(entity.getTime());
+            test.setStartDate(entity.getStartDate());
+            test = addQuestionsToTest(entity.getQuestions().stream().map(BaseEntity::getId).collect(Collectors.toList()), test);
+            test = addUsersToTest(entity.getUsers().stream().map(BaseEntity::getId).collect(Collectors.toList()), test);
+            test.setEndDate(entity.getEndDate());
+            test.setNumberOfQuestions(entity.getNumberOfQuestions());
+            test.setName(entity.getName());
+            return true;
+        }
         return false;
     }
 
@@ -192,8 +209,11 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean updateName(Long id, String name) {
         if (isExists(id)) {
+            User user = userService.getAuthUser();
             Test test = getById(id);
-            test.setName(name);
+            if (test.getUser().equals(user)) {
+                test.setName(name);
+            } else throw new OperationAccessDeniedException("Brak uprawnień do edycji testu.");
             return true;
         }
         return false;
@@ -203,11 +223,14 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean updateNumber(Long id, Integer numberOfQuestions) {
         if (isExists(id)) {
+            User user = userService.getAuthUser();
             Test test = getById(id);
             if (numberOfQuestions > test.getQuestions().size()) {
                 throw new CollectionSizeException("Ilość pytań nie może być mniejsza niż zbiór dostępnych pytań.");
             }
-            test.setNumberOfQuestions(numberOfQuestions);
+            if (test.getUser().equals(user)) {
+                test.setNumberOfQuestions(numberOfQuestions);
+            } else throw new OperationAccessDeniedException("Brak uprawnień do edycji testu.");
             return true;
         }
         return false;
@@ -217,8 +240,11 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean updateTime(Long id, Integer time) {
         if (isExists(id)) {
+            User user = userService.getAuthUser();
             Test test = getById(id);
-            test.setTime(time);
+            if (test.getUser().equals(user)) {
+                test.setTime(time);
+            } else throw new OperationAccessDeniedException("Brak uprawnień do edycji testu.");
             return true;
         }
         return false;
@@ -228,11 +254,14 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean updateStartDate(Long id, LocalDateTime startDate) {
         if (isExists(id)) {
+            User user = userService.getAuthUser();
             Test test = getById(id);
             if (startDate.isAfter(test.getEndDate()) || LocalDateTime.now().isAfter(startDate)) {
                 throw new DateTimeException("Data rozpoczęcia musi być z przyszłości i być wcześniej niż data zakończenia");
             }
-            test.setStartDate(startDate);
+            if (test.getUser().equals(user)) {
+                test.setStartDate(startDate);
+            } else throw new OperationAccessDeniedException("Brak uprawnień do edycji testu.");
             return true;
         }
         return false;
@@ -242,11 +271,14 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean updateEndDate(Long id, LocalDateTime date) {
         if (isExists(id)) {
+            User user = userService.getAuthUser();
             Test test = getById(id);
             if (test.getStartDate().isAfter(date) || LocalDateTime.now().isAfter(date)) {
                 throw new DateTimeException("Data zakończenia musi być z przyszłości i być później niż data rozpoczęcia");
             }
-            test.setEndDate(date);
+            if (test.getUser().equals(user)) {
+                test.setEndDate(date);
+            } else throw new OperationAccessDeniedException("Brak uprawnień do edycji testu.");
             return true;
         }
         return false;

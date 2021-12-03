@@ -1,6 +1,7 @@
 package com.example.testproject.test.web;
 
 import com.example.testproject.exceptions.CollectionSizeException;
+import com.example.testproject.question.dto.QuestionDto;
 import com.example.testproject.shared.BaseController;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.test.converter.TestConverter;
@@ -119,8 +120,6 @@ public class TestController extends BaseController<Test> {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<?> create(@RequestBody @Valid final TestDto dto) {
         if (dto.getNumberOfQuestions() > dto.getQuestionsId().size()) {
-            System.out.println(dto.getNumberOfQuestions());
-            System.out.println(dto.getQuestionsId().size());
             throw new CollectionSizeException("Ilość pytań nie może być mniejsza niż zbiór dostępnych pytań.");
         }
         if (dto.getStartDate().isAfter(dto.getEndDate()) || LocalDateTime.now().isAfter(dto.getStartDate())) {
@@ -191,6 +190,21 @@ public class TestController extends BaseController<Test> {
     }
 
     /* PUT */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<?> update(@PathVariable final Long id, @RequestBody @Valid final TestDto dto) {
+        if (dto.getNumberOfQuestions() > dto.getQuestionsId().size()) {
+            throw new CollectionSizeException("Ilość pytań nie może być mniejsza niż zbiór dostępnych pytań.");
+        }
+        if (dto.getStartDate().isAfter(dto.getEndDate()) || LocalDateTime.now().isAfter(dto.getStartDate())) {
+            throw new DateTimeException("Data rozpoczęcia i zakończenia muszą być z przyszłości " +
+                    "oraz data rozpoczęcia musi być wcześniej niż data zakończenia");
+        }
+        Test test = this.testConverter.toEntity().apply(dto);
+        test = this.testService.addQuestionsToTest(dto.getQuestionsId(), test);
+        test = this.testService.addUsersToTest(dto.getUsersId(), test);
+        return super.update(id, test);
+    }
 
     /* DELETE */
     @DeleteMapping("/{id}")
