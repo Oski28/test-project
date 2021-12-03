@@ -19,11 +19,13 @@ INSERT INTO role(role) VALUE ("ROLE_USER"),("ROLE_TEACHER");
 INSERT INTO user(add_date,email,enabled,firstname,lastname,password,username) VALUE
 (CURRENT_TIMESTAMP() ,"jankowalski@gmail.com","1","Jan","Kowalski",
 "$2a$10$T3kTt667dJDWjGvYE.KTlOfrhaTXHZApORlbGY1YwHb35DTZF7xOS","Janek"),/*H: User123*/
+(CURRENT_TIMESTAMP() ,"jan2kowalski@gmail.com","1","Jan2","Kowalski2",
+"$2a$10$T3kTt667dJDWjGvYE.KTlOfrhaTXHZApORlbGY1YwHb35DTZF7xOS","Janek2"),/*H: User123*/
 (CURRENT_TIMESTAMP() ,"piotrnowak@gmail.com","1","Piotr","Nowak",
 "$2a$10$T3kTt667dJDWjGvYE.KTlOfrhaTXHZApORlbGY1YwHb35DTZF7xOS","Piotrek");/*H: User123*/
 
 /* User role */
-INSERT INTO user_role(id_user,id_role) VALUE ("1","1"),("1","2"),("2","1");
+INSERT INTO user_role(id_user,id_role) VALUE ("1","1"),("1","2"),("3","1"),("3","2"),("2","1");
 
 /* Questions */
 INSERT INTO question(points,text,type,creator_id) VALUE ("1","Typem logicznym jest:","SINGLE", "1"),

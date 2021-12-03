@@ -54,7 +54,7 @@ public class QuestionController extends BaseController<Question> {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<QuestionShowDto> getOne(@PathVariable final Long id) {
-        return super.getOne(id, this.questionShowConverter.toDto());
+        return ResponseEntity.ok(this.questionShowConverter.toDto().apply(this.questionService.getOne(id)));
     }
 
     @GetMapping("")

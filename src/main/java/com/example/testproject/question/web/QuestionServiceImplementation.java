@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,7 +66,7 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
         if (isExists(id)) {
             User user = this.userService.getAuthUser();
             Question question = getById(id);
-            if (!question.getUser().equals(user)){
+            if (!question.getUser().equals(user)) {
                 throw new OperationAccessDeniedException("Brak dostępu do pytania o id " + id);
             }
             this.answerService.removeAllFromQuestion(question);
@@ -88,7 +89,7 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
         if (isExists(id)) {
             User user = this.userService.getAuthUser();
             Question question = getById(id);
-            if (!question.getUser().equals(user)){
+            if (!question.getUser().equals(user)) {
                 throw new OperationAccessDeniedException("Brak dostępu do pytania o id " + id);
             }
             this.testService.removeQuestionForAllTests(question);
@@ -146,5 +147,18 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
             randQuestions.get(i).setAnswers(this.answerService.randAnswers(randQuestions.get(i).getAnswers().stream().collect(Collectors.toList()), randQuestions.get(i).getAnswers().size()).stream().collect(Collectors.toSet()));
         }
         return randQuestions;
+    }
+
+    @Override
+    public Question getOne(Long id) {
+        if (isExists(id)) {
+            Question question = getById(id);
+            User user = this.userService.getAuthUser();
+            if (!question.getUser().equals(user)) {
+                throw new OperationAccessDeniedException("Brak dostępu do pytania o id " + id);
+            }
+            return question;
+        }
+        throw new EntityNotFoundException("Brak pytania o id " + id);
     }
 }
