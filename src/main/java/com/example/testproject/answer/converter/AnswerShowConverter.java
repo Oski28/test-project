@@ -25,7 +25,7 @@ public class AnswerShowConverter extends BaseConverter<Answer, AnswerShowDto> {
 
             AnswerShowDto dto = new AnswerShowDto();
             dto.setId(answer.getId());
-            dto.setCorrect(answer.getCorrect());
+            //  dto.setCorrect(answer.getCorrect());
             dto.setText(answer.getText());
 
             return dto;

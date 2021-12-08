@@ -7,5 +7,5 @@ public class AnswerShowDto {
 
     private Long id;
     private String text;
-    private Boolean correct;
+    // private Boolean correct;
 }
