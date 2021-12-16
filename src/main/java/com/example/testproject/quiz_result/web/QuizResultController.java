@@ -1,8 +1,9 @@
 package com.example.testproject.quiz_result.web;
 
-import com.example.testproject.answer.web.AnswerServiceImplementation;
 import com.example.testproject.quiz_result.converter.QuizResultConverter;
+import com.example.testproject.quiz_result.converter.QuizResultToEvaluateConverter;
 import com.example.testproject.quiz_result.dto.QuizResultDto;
+import com.example.testproject.quiz_result.dto.QuizResultToEvaluateDto;
 import com.example.testproject.quiz_result.model_repo.QuizResult;
 import com.example.testproject.result_answer.model_repo.ResultAnswer;
 import com.example.testproject.result_answer.web.ResultAnswerServiceImplementation;
@@ -16,6 +17,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -26,17 +29,27 @@ public class QuizResultController extends BaseController<QuizResult> {
     private final QuizResultConverter quizResultConverter;
     private final QuizResultServiceImplementation quizResultService;
     private final ResultAnswerServiceImplementation resultAnswerService;
+    private final QuizResultToEvaluateConverter quizResultToEvaluateConverter;
 
     @Autowired
     public QuizResultController(BaseService<QuizResult> service, QuizResultConverter quizResultConverter,
-                                QuizResultServiceImplementation quizResultService, ResultAnswerServiceImplementation resultAnswerService) {
+                                QuizResultServiceImplementation quizResultService,
+                                ResultAnswerServiceImplementation resultAnswerService,
+                                QuizResultToEvaluateConverter quizResultToEvaluateConverter) {
         super(service);
         this.quizResultConverter = quizResultConverter;
         this.quizResultService = quizResultService;
         this.resultAnswerService = resultAnswerService;
+        this.quizResultToEvaluateConverter = quizResultToEvaluateConverter;
     }
 
     /* GET */
+    @GetMapping("/{testId}")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<List<QuizResultToEvaluateDto>> getAllResultsToEvaluate(@PathVariable Long testId) {
+        return ResponseEntity.ok(this.quizResultService.getAllToEvaluateFromTest(testId).stream()
+                .map(this.quizResultToEvaluateConverter.toDto()).collect(Collectors.toList()));
+    }
 
     /* POST */
     @PostMapping("")

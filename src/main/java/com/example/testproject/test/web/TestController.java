@@ -115,6 +115,39 @@ public class TestController extends BaseController<Test> {
                 .map(this.testShowConverter.toDto()));
     }
 
+    @GetMapping("/finished")
+    @PreAuthorize("hasRole('TEACHER')")
+    ResponseEntity<Page<TestShowDto>> getAllCompletedTestCreatedByUser(@RequestParam(defaultValue = "0") final int page,
+                                                                       @RequestParam(defaultValue = "20") final int size,
+                                                                       @RequestParam(defaultValue = "id") final String column,
+                                                                       @RequestParam(defaultValue = "ASC") final String direction){
+        Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        return ResponseEntity.ok(this.testService.getAllCompletedTestCreatedByUser(page, size, column, sortDir)
+                .map(this.testShowConverter.toDto()));
+    }
+
+    @GetMapping("/finished/rated")
+    @PreAuthorize("hasRole('TEACHER')")
+    ResponseEntity<Page<TestShowDto>> getAllCompletedAndRatedTestCreatedByUser(@RequestParam(defaultValue = "0") final int page,
+                                                                       @RequestParam(defaultValue = "20") final int size,
+                                                                       @RequestParam(defaultValue = "id") final String column,
+                                                                       @RequestParam(defaultValue = "ASC") final String direction){
+        Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        return ResponseEntity.ok(this.testService.getAllCompletedAndRatedTestCreatedByUser(page, size, column, sortDir)
+                .map(this.testShowConverter.toDto()));
+    }
+
+    @GetMapping("/finished/toRate")
+    @PreAuthorize("hasRole('TEACHER')")
+    ResponseEntity<Page<TestShowDto>> getAllCompletedAndToRateTestCreatedByUser(@RequestParam(defaultValue = "0") final int page,
+                                                                               @RequestParam(defaultValue = "20") final int size,
+                                                                               @RequestParam(defaultValue = "id") final String column,
+                                                                               @RequestParam(defaultValue = "ASC") final String direction){
+        Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        return ResponseEntity.ok(this.testService.getAllCompletedAndToRateTestCreatedByUser(page, size, column, sortDir)
+                .map(this.testShowConverter.toDto()));
+    }
+
     /* POST */
     @PostMapping("")
     @PreAuthorize("hasRole('TEACHER')")

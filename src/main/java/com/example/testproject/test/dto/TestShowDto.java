@@ -15,6 +15,7 @@ public class TestShowDto {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String organizer;
+    private String status;
     private Integer availableUsersSize;
     private Integer questionPoolSize;
     private Integer executionSize;

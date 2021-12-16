@@ -21,7 +21,7 @@ import java.util.Objects;
 @RestControllerAdvice
 public class RestControllerExceptions {
 
-    @ExceptionHandler(value = {TokenRefreshException.class, OperationAccessDeniedException.class, RuntimeException.class})
+   /* @ExceptionHandler(value = {TokenRefreshException.class, OperationAccessDeniedException.class, RuntimeException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorMessage handleForbidden(RuntimeException exception, WebRequest request) {
         return new ErrorMessage(HttpStatus.FORBIDDEN.value(),
@@ -86,5 +86,5 @@ public class RestControllerExceptions {
                 new Date(),
                 "File too large!",
                 request.getDescription(false));
-    }
+    }*/
 }

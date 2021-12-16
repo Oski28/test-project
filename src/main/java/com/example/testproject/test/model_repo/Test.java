@@ -41,6 +41,10 @@ public class Test extends BaseEntity {
     @Max(value = 7200000, message = "Time must be less or equal 2 hours") // 2 hours
     private Integer time; // in milliseconds
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 8)
+    private TestStatus status;
+
     @Column(name = "start_date")
     private LocalDateTime startDate;
 

@@ -33,8 +33,10 @@ public class ResultAnswerConverter extends BaseConverter<ResultAnswer, ResultAns
 
             resultAnswer.setText(dto.getText());
             resultAnswer.setQuestion(questionService.getById(dto.getQuestionId()));
-            if (resultAnswer.getQuestion().getType().equals(QuestionType.SINGLE)){
-                resultAnswer.setPoints(resultAnswerService.checkAnswer(dto.getAnswerId()));
+            if (resultAnswer.getQuestion().getType().equals(QuestionType.SINGLE)) {
+                if (dto.getAnswerId() != null) {
+                    resultAnswer.setPoints(resultAnswerService.checkAnswer(dto.getAnswerId()));
+                } else resultAnswer.setPoints(0);
             }
             Set<Answer> answerSet = new HashSet<>();
             if (dto.getAnswerIds() != null) {

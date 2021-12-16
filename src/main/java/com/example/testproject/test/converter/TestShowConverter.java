@@ -41,6 +41,7 @@ public class TestShowConverter extends BaseConverter<Test, TestShowDto> {
             dto.setAvailableUsersSize(test.getUsers().size());
             dto.setUsersId(test.getUsers().stream().map(User::getId).collect(Collectors.toList()));
             dto.setQuestionsId(test.getQuestions().stream().map(Question::getId).collect(Collectors.toList()));
+            dto.setStatus(test.getStatus().toString());
 
             return dto;
         };

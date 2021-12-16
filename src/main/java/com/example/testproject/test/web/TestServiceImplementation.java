@@ -8,6 +8,7 @@ import com.example.testproject.shared.BaseEntity;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.test.model_repo.Test;
 import com.example.testproject.test.model_repo.TestRepository;
+import com.example.testproject.test.model_repo.TestStatus;
 import com.example.testproject.user.model_repo.User;
 import com.example.testproject.user.web.UserServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -282,5 +283,36 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
             return true;
         }
         return false;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public boolean removeUserFromTestParticipation(User user, Long testId) {
+        if (isExists(testId)) {
+            Test test = getById(testId);
+            return test.getUsers().remove(user);
+        }
+        return false;
+    }
+
+    @Override
+    public Page<Test> getAllCompletedTestCreatedByUser(int page, int size, String column, Sort.Direction sortDir) {
+        Sort sort = Sort.by(new Sort.Order(sortDir, column));
+        User user = this.userService.getAuthUser();
+        return this.testRepository.getAllByUserAndEndDateBefore(user, LocalDateTime.now(), PageRequest.of(page, size, sort));
+    }
+
+    @Override
+    public Page<Test> getAllCompletedAndRatedTestCreatedByUser(int page, int size, String column, Sort.Direction sortDir) {
+        Sort sort = Sort.by(new Sort.Order(sortDir, column));
+        User user = this.userService.getAuthUser();
+        return this.testRepository.getAllByUserAndEndDateBeforeAndStatus(user, LocalDateTime.now(), TestStatus.RATED, PageRequest.of(page, size, sort));
+    }
+
+    @Override
+    public Page<Test> getAllCompletedAndToRateTestCreatedByUser(int page, int size, String column, Sort.Direction sortDir) {
+        Sort sort = Sort.by(new Sort.Order(sortDir, column));
+        User user = this.userService.getAuthUser();
+        return this.testRepository.getAllByUserAndEndDateBeforeAndStatus(user, LocalDateTime.now(), TestStatus.TO_RATE, PageRequest.of(page, size, sort));
     }
 }

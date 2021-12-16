@@ -47,6 +47,7 @@ public class QuizResultConverter extends BaseConverter<QuizResult, QuizResultDto
             if (test.getStartDate().isAfter(quizResult.getDateOfExecution()) || test.getEndDate().plusSeconds(2 * test.getTime() / 1000).isBefore(quizResult.getDateOfExecution())) {
                 throw new DateTimeException("Czas wysłania testu nie mieści się w ramach czasowych przewidzianych na jego rozwiązanie");
             }
+            testServiceImplementation.removeUserFromTestParticipation(user, test.getId());
             quizResult.setUser(user);
             quizResult.setName(test.getName() + " " + user.getUsername());
             Set<ResultAnswer> resultAnswerSet = new HashSet<>();

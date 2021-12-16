@@ -29,4 +29,8 @@ public interface TestRepository extends BaseRepository<Test> {
 
     Page<Test> getAllByUserAndStartDateAfterOrUserAndEndDateBefore(User user1, LocalDateTime dateTime1, User user2,
                                                                    LocalDateTime dateTime2, Pageable pageable);
+
+    Page<Test> getAllByUserAndEndDateBefore(User user, LocalDateTime dateTime, Pageable pageable);
+
+    Page<Test> getAllByUserAndEndDateBeforeAndStatus(User user,LocalDateTime dateTime, TestStatus status, Pageable pageable);
 }

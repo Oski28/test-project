@@ -40,11 +40,20 @@ INSERT INTO answer(correct,text,question_id) VALUE (true,"boolean","1"), (false 
 (false ,"char","2"), (false ,"8","3"), (false ,"11","3"), (false ,"13","3"), (true ,"17","3"), (false ,"15","3");
 
 /* Test */
-INSERT INTO test(end_date, number_of_questions, start_date, time, organizer_id, name)
-VALUE("2022-02-14 19:00:00","2","2021-11-14 13:00:00","300000","1","Test 1");
+INSERT INTO test(end_date, number_of_questions,status, start_date, time, organizer_id, name)
+VALUE("2022-02-14 19:00:00","2","TO_RATE","2021-11-14 13:00:00","300000","1","Test 1"),
+("2021-12-14 19:00:00","2","TO_RATE","2021-11-14 13:00:00","300000","1","Test 2");
+
+INSERT INTO quiz_result(date_of_execution,mark,max_points,name,total_points,test_id,user_id)
+VALUE ("2021-12-14 14:15:31.458133",null ,3 ,"Test 2 Janek",null ,2,1);
+
+INSERT INTO result_answer(points,text,question_id,result_id)
+VALUE (null, null, 2,1),(1, null, 1,1);
+
+INSERT INTO result_answer_answer(id_result_answer,id_answer) VALUE (2,1),(1,5),(1,6);
 
 /* Test_Question */
-INSERT INTO test_question(id_test,id_question) VALUE ("1","1"),("1","2"),("1","3");
+INSERT INTO test_question(id_test,id_question) VALUE ("1","1"),("1","2"),("1","3"),("2","1"),("2","2"),("2","3");
 
 /* Quiz_Access */
-INSERT INTO quiz_access(id_test,id_user) VALUE ("1","1"),("1","2");
+INSERT INTO quiz_access(id_test,id_user) VALUE ("1","1"),("1","2"),("2","1"),("2","2");
