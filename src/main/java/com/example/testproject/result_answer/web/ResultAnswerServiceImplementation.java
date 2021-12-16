@@ -2,6 +2,9 @@ package com.example.testproject.result_answer.web;
 
 import com.example.testproject.answer.model_repo.Answer;
 import com.example.testproject.answer.web.AnswerServiceImplementation;
+import com.example.testproject.question.model_repo.Question;
+import com.example.testproject.question.web.QuestionServiceImplementation;
+import com.example.testproject.quiz_result.model_repo.QuizResult;
 import com.example.testproject.result_answer.model_repo.ResultAnswer;
 import com.example.testproject.result_answer.model_repo.ResultAnswerRepository;
 import com.example.testproject.shared.BaseService;
@@ -20,6 +23,8 @@ public class ResultAnswerServiceImplementation implements BaseService<ResultAnsw
 
     private AnswerServiceImplementation answerService;
 
+    private QuestionServiceImplementation questionService;
+
     @Autowired
     public ResultAnswerServiceImplementation(ResultAnswerRepository resultAnswerRepository) {
         this.resultAnswerRepository = resultAnswerRepository;
@@ -28,6 +33,11 @@ public class ResultAnswerServiceImplementation implements BaseService<ResultAnsw
     @Autowired
     public void setAnswerService(AnswerServiceImplementation answerService) {
         this.answerService = answerService;
+    }
+
+    @Autowired
+    public void setQuestionService(QuestionServiceImplementation questionService) {
+        this.questionService = questionService;
     }
 
     @Override
@@ -79,5 +89,11 @@ public class ResultAnswerServiceImplementation implements BaseService<ResultAnsw
             sum.updateAndGet(v -> v + resultAnswer.getQuestion().getPoints());
         });
         return sum.get();
+    }
+
+    @Override
+    public ResultAnswer getByQuestionIdAndQuizResult(Long questionId, QuizResult quizResult) {
+        Question question = this.questionService.getById(questionId);
+        return this.resultAnswerRepository.getByQuestionAndAndQuizResult(question, quizResult);
     }
 }

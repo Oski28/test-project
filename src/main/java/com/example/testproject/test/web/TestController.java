@@ -1,7 +1,7 @@
 package com.example.testproject.test.web;
 
 import com.example.testproject.exceptions.CollectionSizeException;
-import com.example.testproject.question.dto.QuestionDto;
+import com.example.testproject.quiz_result.web.QuizResultServiceImplementation;
 import com.example.testproject.shared.BaseController;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.test.converter.TestConverter;
@@ -31,15 +31,17 @@ public class TestController extends BaseController<Test> {
     private final TestShowConverter testShowConverter;
     private final TestConverter testConverter;
     private final UserServiceImplementation userService;
+    private final QuizResultServiceImplementation quizResultService;
 
     public TestController(BaseService<Test> service, TestServiceImplementation testService,
                           TestShowConverter testShowConverter, TestConverter testConverter,
-                          UserServiceImplementation userService) {
+                          UserServiceImplementation userService, QuizResultServiceImplementation quizResultService) {
         super(service);
         this.testService = testService;
         this.testShowConverter = testShowConverter;
         this.testConverter = testConverter;
         this.userService = userService;
+        this.quizResultService = quizResultService;
     }
 
     /* GET */
@@ -226,6 +228,7 @@ public class TestController extends BaseController<Test> {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<Void> rateTest(@PathVariable final Long id, @RequestBody @Valid final TestRateDto dto){
         if (this.testService.rateTest(id, dto)) {
+            this.quizResultService.sumPoints(id);
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();

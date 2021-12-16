@@ -4,6 +4,12 @@ import com.example.testproject.exceptions.CollectionSizeException;
 import com.example.testproject.exceptions.OperationAccessDeniedException;
 import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.question.web.QuestionServiceImplementation;
+import com.example.testproject.quiz_result.dto.QuizResultRateDto;
+import com.example.testproject.quiz_result.model_repo.QuizResult;
+import com.example.testproject.quiz_result.web.QuizResultServiceImplementation;
+import com.example.testproject.result_answer.dto.ResultAnswerRateDto;
+import com.example.testproject.result_answer.model_repo.ResultAnswer;
+import com.example.testproject.result_answer.web.ResultAnswerServiceImplementation;
 import com.example.testproject.shared.BaseEntity;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.test.dto.TestRateDto;
@@ -38,6 +44,10 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
 
     private QuestionServiceImplementation questionService;
 
+    private QuizResultServiceImplementation quizResultService;
+
+    private ResultAnswerServiceImplementation resultAnswerService;
+
     @Autowired
     public TestServiceImplementation(TestRepository testRepository) {
         this.testRepository = testRepository;
@@ -51,6 +61,11 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     @Autowired
     public void setQuestionService(QuestionServiceImplementation questionService) {
         this.questionService = questionService;
+    }
+
+    @Autowired
+    public void setQuizResultService(QuizResultServiceImplementation quizResultService) {
+        this.quizResultService = quizResultService;
     }
 
     @Override
@@ -318,6 +333,7 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
     public boolean rateTest(Long id, TestRateDto dto) {
         if (isExists(id)) {
             Test test = getById(id);
@@ -325,7 +341,18 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
             if (!test.getUser().equals(user)) {
                 throw new OperationAccessDeniedException("Brak uprawnień do oceniania testu.");
             }
-
+            if (test.getStatus().equals(TestStatus.RATED)) {
+                throw new OperationAccessDeniedException("Test został już oceniony. Nie można ponownie oceniać testu");
+            }
+            test.setStatus(TestStatus.RATED);
+            for (QuizResultRateDto point : dto.getPoints()) {
+                User student = userService.getById(point.getStudentId());
+                QuizResult quizResult = this.quizResultService.getByUserAndTest(student,test);
+                for (ResultAnswerRateDto answer : point.getAnswers()) {
+                    ResultAnswer resultAnswer = this.resultAnswerService.getByQuestionIdAndQuizResult(answer.getQuestionId(),quizResult);
+                    resultAnswer.setPoints(answer.getAwardedPoints());
+                }
+            }
             return true;
         }
         return false;

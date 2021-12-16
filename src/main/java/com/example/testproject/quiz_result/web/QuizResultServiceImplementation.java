@@ -3,6 +3,7 @@ package com.example.testproject.quiz_result.web;
 import com.example.testproject.exceptions.OperationAccessDeniedException;
 import com.example.testproject.quiz_result.model_repo.QuizResult;
 import com.example.testproject.quiz_result.model_repo.QuizResultRepository;
+import com.example.testproject.result_answer.model_repo.ResultAnswer;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.test.model_repo.Test;
 import com.example.testproject.test.web.TestServiceImplementation;
@@ -12,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -81,5 +85,24 @@ public class QuizResultServiceImplementation implements BaseService<QuizResult>,
             throw new OperationAccessDeniedException("Test niedostępny do oceniania. Aby rozpocząć ocenianie testów muszą się one zakończyć dla uczniów.");
         }
         return this.quizResultRepository.getAllByTest(test);
+    }
+
+    @Override
+    public QuizResult getByUserAndTest(User student, Test test) {
+        return this.quizResultRepository.getByUserAndTest(student, test);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+    public void sumPoints(Long id) {
+        Test test = testService.getById(id);
+        List<QuizResult> quizResults = this.quizResultRepository.getAllByTest(test);
+        for (QuizResult quizResult : quizResults) {
+            Integer points = 0;
+            for (ResultAnswer resultAnswer : quizResult.getResultAnswers()) {
+                points += resultAnswer.getPoints();
+            }
+            quizResult.setTotalPoints(points);
+        }
     }
 }
