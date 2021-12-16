@@ -222,6 +222,16 @@ public class TestController extends BaseController<Test> {
         }
     }
 
+    @PatchMapping("/{id}/rate")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<Void> rateTest(@PathVariable final Long id, @RequestBody @Valid final TestRateDto dto){
+        if (this.testService.rateTest(id, dto)) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     /* PUT */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER')")

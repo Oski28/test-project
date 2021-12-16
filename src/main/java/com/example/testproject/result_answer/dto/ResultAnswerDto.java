@@ -8,7 +8,7 @@ import javax.validation.constraints.Size;
 @Data
 public class ResultAnswerDto {
 
-    @Size(min = 1, max = 300, message = "Text must contain between 1 and 300 characters.")
+    @Size(max = 300, message = "Text must be max 300 characters.")
     private String text;
 
     @NotNull

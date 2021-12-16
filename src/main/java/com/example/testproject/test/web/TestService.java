@@ -1,6 +1,7 @@
 package com.example.testproject.test.web;
 
 import com.example.testproject.question.model_repo.Question;
+import com.example.testproject.test.dto.TestRateDto;
 import com.example.testproject.test.model_repo.Test;
 import com.example.testproject.user.model_repo.User;
 import org.springframework.data.domain.Page;
@@ -47,4 +48,6 @@ public interface TestService {
     Page<Test> getAllCompletedAndRatedTestCreatedByUser(int page, int size, String column, Sort.Direction sortDir);
 
     Page<Test> getAllCompletedAndToRateTestCreatedByUser(int page, int size, String column, Sort.Direction sortDir);
+
+    boolean rateTest(Long id, TestRateDto dto);
 }

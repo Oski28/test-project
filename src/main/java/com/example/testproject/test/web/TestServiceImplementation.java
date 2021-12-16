@@ -6,6 +6,7 @@ import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.question.web.QuestionServiceImplementation;
 import com.example.testproject.shared.BaseEntity;
 import com.example.testproject.shared.BaseService;
+import com.example.testproject.test.dto.TestRateDto;
 import com.example.testproject.test.model_repo.Test;
 import com.example.testproject.test.model_repo.TestRepository;
 import com.example.testproject.test.model_repo.TestStatus;
@@ -314,5 +315,19 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
         Sort sort = Sort.by(new Sort.Order(sortDir, column));
         User user = this.userService.getAuthUser();
         return this.testRepository.getAllByUserAndEndDateBeforeAndStatus(user, LocalDateTime.now(), TestStatus.TO_RATE, PageRequest.of(page, size, sort));
+    }
+
+    @Override
+    public boolean rateTest(Long id, TestRateDto dto) {
+        if (isExists(id)) {
+            Test test = getById(id);
+            User user = userService.getAuthUser();
+            if (!test.getUser().equals(user)) {
+                throw new OperationAccessDeniedException("Brak uprawnień do oceniania testu.");
+            }
+
+            return true;
+        }
+        return false;
     }
 }
