@@ -1,7 +1,9 @@
 package com.example.testproject.answer.model_repo;
 
 import com.example.testproject.question.model_repo.Question;
+import com.example.testproject.result_answer.model_repo.ResultAnswer;
 import com.example.testproject.shared.BaseEntity;
+import com.example.testproject.user.model_repo.User;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,7 @@ import org.hibernate.annotations.GenerationTime;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -34,4 +37,9 @@ public class Answer extends BaseEntity {
     @ManyToOne(targetEntity = Question.class, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(nullable = false, name = "question_id", referencedColumnName = "id")
     private Question question;
+
+    @ManyToMany(mappedBy = "answers", fetch = FetchType.LAZY)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private List<ResultAnswer> resultAnswers;
 }

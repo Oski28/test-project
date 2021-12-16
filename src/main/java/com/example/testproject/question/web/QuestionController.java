@@ -3,15 +3,18 @@ package com.example.testproject.question.web;
 import com.example.testproject.answer.model_repo.Answer;
 import com.example.testproject.answer.web.AnswerServiceImplementation;
 import com.example.testproject.question.converter.QuestionConverter;
-import com.example.testproject.question.converter.QuestionShowConverter;
+import com.example.testproject.question.converter.QuestionShowWithCorrectConverter;
+import com.example.testproject.question.converter.QuestionShowWithoutCorrectConverter;
 import com.example.testproject.question.dto.QuestionDto;
-import com.example.testproject.question.dto.QuestionShowDto;
+import com.example.testproject.question.dto.QuestionShowWithCorrectDto;
+import com.example.testproject.question.dto.QuestionShowWithoutCorrectDto;
 import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.shared.BaseController;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.user.model_repo.User;
 import com.example.testproject.user.web.UserServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -32,18 +35,20 @@ import java.util.stream.Collectors;
 public class QuestionController extends BaseController<Question> {
 
     private final QuestionServiceImplementation questionService;
-    private final QuestionShowConverter questionShowConverter;
+    private final QuestionShowWithCorrectConverter questionShowWithCorrectConverter;
+    private final QuestionShowWithoutCorrectConverter questionShowWithoutCorrectConverter;
     private final QuestionConverter questionConverter;
     private final UserServiceImplementation userService;
     private final AnswerServiceImplementation answerService;
 
     @Autowired
     public QuestionController(BaseService<Question> service, QuestionServiceImplementation questionService,
-                              QuestionShowConverter questionShowConverter, QuestionConverter questionConverter,
+                              QuestionShowWithCorrectConverter questionShowWithCorrectConverter, QuestionShowWithoutCorrectConverter questionShowWithoutCorrectConverter, QuestionConverter questionConverter,
                               UserServiceImplementation userService, AnswerServiceImplementation answerService) {
         super(service);
         this.questionService = questionService;
-        this.questionShowConverter = questionShowConverter;
+        this.questionShowWithCorrectConverter = questionShowWithCorrectConverter;
+        this.questionShowWithoutCorrectConverter = questionShowWithoutCorrectConverter;
         this.questionConverter = questionConverter;
         this.userService = userService;
         this.answerService = answerService;
@@ -53,39 +58,46 @@ public class QuestionController extends BaseController<Question> {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<QuestionShowDto> getOne(@PathVariable final Long id) {
-        return ResponseEntity.ok(this.questionShowConverter.toDto().apply(this.questionService.getOne(id)));
+    public ResponseEntity<QuestionShowWithCorrectDto> getOne(@PathVariable final Long id) {
+        return ResponseEntity.ok(this.questionShowWithCorrectConverter.toDto().apply(this.questionService.getOne(id)));
     }
 
     @GetMapping("")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<Page<QuestionShowDto>> getAll(@RequestParam(defaultValue = "0") final int page,
-                                                        @RequestParam(defaultValue = "20") final int size,
-                                                        @RequestParam(defaultValue = "id") final String column,
-                                                        @RequestParam(defaultValue = "ASC") final String direction) {
+    public ResponseEntity<Page<QuestionShowWithCorrectDto>> getAll(@RequestParam(defaultValue = "0") final int page,
+                                                                   @RequestParam(defaultValue = "20") final int size,
+                                                                   @RequestParam(defaultValue = "id") final String column,
+                                                                   @RequestParam(defaultValue = "ASC") final String direction) {
         Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         return ResponseEntity.ok(this.questionService.getAll(page, size, column, sortDir).
-                map(this.questionShowConverter.toDto()));
+                map(this.questionShowWithCorrectConverter.toDto()));
     }
 
     @GetMapping("/teacher")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<Page<QuestionShowDto>> getAllForAuthTeacherWithFilter(@RequestParam(defaultValue = "0") final int page,
-                                                                                @RequestParam(defaultValue = "20") final int size,
-                                                                                @RequestParam(defaultValue = "id") final String column,
-                                                                                @RequestParam(defaultValue = "ASC") final String direction,
-                                                                                @RequestParam(defaultValue = "") final String filter) {
+    public ResponseEntity<Page<QuestionShowWithCorrectDto>> getAllForAuthTeacherWithFilter(@RequestParam(defaultValue = "0") final int page,
+                                                                                           @RequestParam(defaultValue = "20") final int size,
+                                                                                           @RequestParam(defaultValue = "id") final String column,
+                                                                                           @RequestParam(defaultValue = "ASC") final String direction,
+                                                                                           @RequestParam(defaultValue = "") final String filter) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         return ResponseEntity.ok(this.questionService.getAllForAuthTeacherWithFilter(page, size, column, sortDir, filter, authentication.getName())
-                .map(this.questionShowConverter.toDto()));
+                .map(this.questionShowWithCorrectConverter.toDto()));
+    }
+
+    @GetMapping("/test/{testId}/correct")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<QuestionShowWithCorrectDto>> getQuestionsForTestWithCorrect(@PathVariable Long testId) {
+        return ResponseEntity.ok(this.questionService.getQuestionsForTest(testId).stream()
+                .map(this.questionShowWithCorrectConverter.toDto()).collect(Collectors.toList()));
     }
 
     @GetMapping("/test/{testId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<QuestionShowDto>> getQuestionsForTest(@PathVariable Long testId) {
+    public ResponseEntity<List<QuestionShowWithoutCorrectDto>> getQuestionsForTestWithoutCorrect(@PathVariable Long testId) {
         return ResponseEntity.ok(this.questionService.getQuestionsForTest(testId).stream()
-                .map(this.questionShowConverter.toDto()).collect(Collectors.toList()));
+                .map(this.questionShowWithoutCorrectConverter.toDto()).collect(Collectors.toList()));
     }
 
     /* POST */

@@ -1,5 +1,8 @@
 package com.example.testproject.result_answer.converter;
 
+import com.example.testproject.answer.model_repo.Answer;
+import com.example.testproject.answer.web.AnswerServiceImplementation;
+import com.example.testproject.question.model_repo.QuestionType;
 import com.example.testproject.question.web.QuestionServiceImplementation;
 import com.example.testproject.result_answer.dto.ResultAnswerDto;
 import com.example.testproject.result_answer.model_repo.ResultAnswer;
@@ -8,6 +11,8 @@ import com.example.testproject.shared.BaseConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 @Service
@@ -16,6 +21,7 @@ public class ResultAnswerConverter extends BaseConverter<ResultAnswer, ResultAns
 
     private final QuestionServiceImplementation questionService;
     private final ResultAnswerServiceImplementation resultAnswerService;
+    private final AnswerServiceImplementation answerServiceImplementation;
 
     @Override
     public Function<ResultAnswerDto, ResultAnswer> toEntity() {
@@ -27,7 +33,18 @@ public class ResultAnswerConverter extends BaseConverter<ResultAnswer, ResultAns
 
             resultAnswer.setText(dto.getText());
             resultAnswer.setQuestion(questionService.getById(dto.getQuestionId()));
-            resultAnswer.setPoints(resultAnswerService.checkAnswer(dto.getAnswerId()));
+            if (resultAnswer.getQuestion().getType().equals(QuestionType.SINGLE)){
+                resultAnswer.setPoints(resultAnswerService.checkAnswer(dto.getAnswerId()));
+            }
+            Set<Answer> answerSet = new HashSet<>();
+            if (dto.getAnswerIds() != null) {
+                for (Long id : dto.getAnswerIds()) {
+                    answerSet.add(this.answerServiceImplementation.getById(id));
+                }
+            } else if (dto.getAnswerId() != null) {
+                answerSet.add(this.answerServiceImplementation.getById(dto.getAnswerId()));
+            }
+            resultAnswer.setAnswers(answerSet);
 
             return resultAnswer;
         };

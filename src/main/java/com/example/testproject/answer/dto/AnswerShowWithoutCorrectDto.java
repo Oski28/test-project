@@ -3,9 +3,8 @@ package com.example.testproject.answer.dto;
 import lombok.Data;
 
 @Data
-public class AnswerShowDto {
+public class AnswerShowWithoutCorrectDto {
 
     private Long id;
     private String text;
-    // private Boolean correct;
 }

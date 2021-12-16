@@ -10,6 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+
 @Service
 public class ResultAnswerServiceImplementation implements BaseService<ResultAnswer>, ResultAnswerService {
 
@@ -44,7 +47,7 @@ public class ResultAnswerServiceImplementation implements BaseService<ResultAnsw
 
     @Override
     public ResultAnswer save(ResultAnswer entity) {
-        return null;
+        return this.resultAnswerRepository.save(entity);
     }
 
     @Override
@@ -67,5 +70,14 @@ public class ResultAnswerServiceImplementation implements BaseService<ResultAnsw
             return answer.getQuestion().getPoints();
         }
         return 0;
+    }
+
+    @Override
+    public Integer getMaxPoints(Set<ResultAnswer> resultAnswers) {
+        AtomicReference<Integer> sum = new AtomicReference<>(0);
+        resultAnswers.forEach(resultAnswer -> {
+            sum.updateAndGet(v -> v + resultAnswer.getQuestion().getPoints());
+        });
+        return sum.get();
     }
 }

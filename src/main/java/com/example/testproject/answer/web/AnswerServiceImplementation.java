@@ -49,12 +49,15 @@ public class AnswerServiceImplementation implements BaseService<Answer>, AnswerS
 
     @Override
     public Answer getById(Long id) {
+        if (isExists(id)) {
+            return this.answerRepository.getById(id);
+        }
         return null;
     }
 
     @Override
     public boolean isExists(Long id) {
-        return false;
+        return this.answerRepository.existsById(id);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.example.testproject.answer.converter;
 
-import com.example.testproject.answer.dto.AnswerShowDto;
+import com.example.testproject.answer.dto.AnswerShowWithoutCorrectDto;
 import com.example.testproject.answer.model_repo.Answer;
 import com.example.testproject.shared.BaseConverter;
 import lombok.RequiredArgsConstructor;
@@ -10,22 +10,20 @@ import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-public class AnswerShowConverter extends BaseConverter<Answer, AnswerShowDto> {
-
+public class AnswerShowWithoutCorrectConverter extends BaseConverter<Answer, AnswerShowWithoutCorrectDto> {
     @Override
-    public Function<AnswerShowDto, Answer> toEntity() {
+    public Function<AnswerShowWithoutCorrectDto, Answer> toEntity() {
         return null;
     }
 
     @Override
-    public Function<Answer, AnswerShowDto> toDto() {
+    public Function<Answer, AnswerShowWithoutCorrectDto> toDto() {
         return answer -> {
             if (answer == null)
                 return null;
 
-            AnswerShowDto dto = new AnswerShowDto();
+            AnswerShowWithoutCorrectDto dto = new AnswerShowWithoutCorrectDto();
             dto.setId(answer.getId());
-            //  dto.setCorrect(answer.getCorrect());
             dto.setText(answer.getText());
 
             return dto;
