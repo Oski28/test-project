@@ -68,6 +68,11 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
         this.quizResultService = quizResultService;
     }
 
+    @Autowired
+    public void setResultAnswerService(ResultAnswerServiceImplementation resultAnswerService) {
+        this.resultAnswerService = resultAnswerService;
+    }
+
     @Override
     public Page<Test> getAll(int page, int size, String column, Sort.Direction direction) {
         return null;
@@ -347,9 +352,9 @@ public class TestServiceImplementation implements BaseService<Test>, TestService
             test.setStatus(TestStatus.RATED);
             for (QuizResultRateDto point : dto.getPoints()) {
                 User student = userService.getById(point.getStudentId());
-                QuizResult quizResult = this.quizResultService.getByUserAndTest(student,test);
+                QuizResult quizResult = this.quizResultService.getByUserAndTest(student, test);
                 for (ResultAnswerRateDto answer : point.getAnswers()) {
-                    ResultAnswer resultAnswer = this.resultAnswerService.getByQuestionIdAndQuizResult(answer.getQuestionId(),quizResult);
+                    ResultAnswer resultAnswer = this.resultAnswerService.getByQuestionIdAndQuizResult(answer.getQuestionId(), quizResult);
                     resultAnswer.setPoints(answer.getAwardedPoints());
                 }
             }
