@@ -28,9 +28,8 @@ public class ResultAnswerToEvaluateConverter extends BaseConverter<ResultAnswer,
             ResultAnswerToEvaluateDto dto = new ResultAnswerToEvaluateDto();
             dto.setId(resultAnswer.getId());
             dto.setQuestionId(resultAnswer.getQuestion().getId());
-            if (resultAnswer.getQuestion().getType().equals(QuestionType.DESCRIPTIVE) &&
-                    resultAnswer.getAnswers().stream().findFirst().isPresent()){
-                dto.setWrittenOpenedAnswers(resultAnswer.getAnswers().stream().findFirst().get().getText());
+            if (resultAnswer.getQuestion().getType().equals(QuestionType.DESCRIPTIVE) ){
+                dto.setWrittenOpenedAnswers(resultAnswer.getText());
             } else if (resultAnswer.getQuestion().getType().equals(QuestionType.MULTI)){
                 dto.setSelectedClosedAnswersIds(resultAnswer.getAnswers().stream().map(BaseEntity::getId).toArray(Long[]::new));
             }

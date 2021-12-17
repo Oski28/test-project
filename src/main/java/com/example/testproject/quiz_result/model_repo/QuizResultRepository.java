@@ -13,4 +13,6 @@ public interface QuizResultRepository extends BaseRepository<QuizResult> {
     List<QuizResult> getAllByTest(Test test);
 
     QuizResult getByUserAndTest(User user, Test test);
+
+    List<QuizResult> getAllByUser(User user);
 }

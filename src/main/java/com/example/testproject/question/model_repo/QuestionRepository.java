@@ -13,4 +13,5 @@ public interface QuestionRepository extends BaseRepository<Question> {
     Page<Question> getAllByUser(User user, Pageable pageable);
 
     Page<Question> getAllByUserAndTextContains(User user, String filter, Pageable pageable);
+
 }

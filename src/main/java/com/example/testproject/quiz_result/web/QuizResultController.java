@@ -1,8 +1,10 @@
 package com.example.testproject.quiz_result.web;
 
 import com.example.testproject.quiz_result.converter.QuizResultConverter;
+import com.example.testproject.quiz_result.converter.QuizResultShowConverter;
 import com.example.testproject.quiz_result.converter.QuizResultToEvaluateConverter;
 import com.example.testproject.quiz_result.dto.QuizResultDto;
+import com.example.testproject.quiz_result.dto.QuizResultShowDto;
 import com.example.testproject.quiz_result.dto.QuizResultToEvaluateDto;
 import com.example.testproject.quiz_result.model_repo.QuizResult;
 import com.example.testproject.result_answer.model_repo.ResultAnswer;
@@ -30,26 +32,48 @@ public class QuizResultController extends BaseController<QuizResult> {
     private final QuizResultServiceImplementation quizResultService;
     private final ResultAnswerServiceImplementation resultAnswerService;
     private final QuizResultToEvaluateConverter quizResultToEvaluateConverter;
+    private final QuizResultShowConverter quizResultShowConverter;
 
     @Autowired
     public QuizResultController(BaseService<QuizResult> service, QuizResultConverter quizResultConverter,
                                 QuizResultServiceImplementation quizResultService,
                                 ResultAnswerServiceImplementation resultAnswerService,
-                                QuizResultToEvaluateConverter quizResultToEvaluateConverter) {
+                                QuizResultToEvaluateConverter quizResultToEvaluateConverter, QuizResultShowConverter quizResultShowConverter) {
         super(service);
         this.quizResultConverter = quizResultConverter;
         this.quizResultService = quizResultService;
         this.resultAnswerService = resultAnswerService;
         this.quizResultToEvaluateConverter = quizResultToEvaluateConverter;
+        this.quizResultShowConverter = quizResultShowConverter;
     }
 
     /* GET */
     @GetMapping("/{testId}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<List<QuizResultToEvaluateDto>> getAllResultsToEvaluate(@PathVariable Long testId) {
-        return ResponseEntity.ok(this.quizResultService.getAllToEvaluateFromTest(testId).stream()
+        return ResponseEntity.ok(this.quizResultService.getAllToEvaluateForTest(testId).stream()
                 .map(this.quizResultToEvaluateConverter.toDto()).collect(Collectors.toList()));
     }
+
+    @GetMapping("/{testId}/rated")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<List<QuizResultShowDto>> getAllRatedResultsForTest(@PathVariable Long testId) {
+        return ResponseEntity.ok(this.quizResultService.getAllRatedForTest(testId).stream()
+                .map(this.quizResultShowConverter.toDto()).collect(Collectors.toList()));
+    }
+
+    @GetMapping("")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<QuizResultShowDto>> getAllRatedResultsForUser() {
+        return ResponseEntity.ok(this.quizResultService.getAllRatedForUser().stream()
+                .map(this.quizResultShowConverter.toDto()).collect(Collectors.toList()));
+    }
+
+    @GetMapping("/{id}/one")
+    public ResponseEntity<QuizResultShowDto> getOne(@PathVariable final Long id) {
+        return ResponseEntity.ok(this.quizResultShowConverter.toDto().apply(this.quizResultService.getById(id)));
+    }
+
 
     /* POST */
     @PostMapping("")

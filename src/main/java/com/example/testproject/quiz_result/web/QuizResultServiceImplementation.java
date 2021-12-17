@@ -6,6 +6,7 @@ import com.example.testproject.quiz_result.model_repo.QuizResultRepository;
 import com.example.testproject.result_answer.model_repo.ResultAnswer;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.test.model_repo.Test;
+import com.example.testproject.test.model_repo.TestStatus;
 import com.example.testproject.test.web.TestServiceImplementation;
 import com.example.testproject.user.model_repo.User;
 import com.example.testproject.user.web.UserServiceImplementation;
@@ -66,16 +67,27 @@ public class QuizResultServiceImplementation implements BaseService<QuizResult>,
 
     @Override
     public QuizResult getById(Long id) {
+        if (isExists(id)) {
+            User user = userService.getAuthUser();
+            QuizResult quizResult = this.quizResultRepository.getById(id);
+            if (!quizResult.getUser().equals(user) || !quizResult.getTest().getUser().equals(user)) {
+                throw new OperationAccessDeniedException("Nie masz uprawnień do poglądu rozwiązanego testu.");
+            }
+            if (quizResult.getTest().getStatus().equals(TestStatus.TO_RATE)) {
+                throw new OperationAccessDeniedException("Test nie został w pełni oceniony. Podgląd aktualnie niedostępny");
+            }
+            return quizResult;
+        }
         return null;
     }
 
     @Override
     public boolean isExists(Long id) {
-        return false;
+        return quizResultRepository.existsById(id);
     }
 
     @Override
-    public List<QuizResult> getAllToEvaluateFromTest(Long testId) {
+    public List<QuizResult> getAllToEvaluateForTest(Long testId) {
         User user = this.userService.getAuthUser();
         Test test = this.testService.getById(testId);
         if (!test.getUser().equals(user)) {
@@ -84,7 +96,11 @@ public class QuizResultServiceImplementation implements BaseService<QuizResult>,
         if (test.getEndDate().isAfter(LocalDateTime.now())) {
             throw new OperationAccessDeniedException("Test niedostępny do oceniania. Aby rozpocząć ocenianie testów muszą się one zakończyć dla uczniów.");
         }
-        return this.quizResultRepository.getAllByTest(test);
+        List<QuizResult> results = this.quizResultRepository.getAllByTest(test);
+        for (QuizResult result : results) {
+            result.getResultAnswers().removeIf(resultAnswer -> resultAnswer.getPoints() != null);
+        }
+        return results;
     }
 
     @Override
@@ -104,5 +120,26 @@ public class QuizResultServiceImplementation implements BaseService<QuizResult>,
             }
             quizResult.setTotalPoints(points);
         }
+    }
+
+    @Override
+    public List<QuizResult> getAllRatedForTest(Long testId) {
+        User user = this.userService.getAuthUser();
+        Test test = this.testService.getById(testId);
+        if (!test.getUser().equals(user)) {
+            throw new OperationAccessDeniedException("Nie masz uprawnień podglądy ocenionych testów");
+        }
+        if (test.getStatus().equals(TestStatus.TO_RATE)) {
+            throw new OperationAccessDeniedException("Test nie został oceniony. Brak możliwości podglądu wyników.");
+        }
+        return this.quizResultRepository.getAllByTest(test);
+    }
+
+    @Override
+    public List<QuizResult> getAllRatedForUser() {
+        User user = this.userService.getAuthUser();
+        List<QuizResult> results = this.quizResultRepository.getAllByUser(user);
+        results.removeIf(quizResult -> quizResult.getTest().getStatus().equals(TestStatus.TO_RATE));
+        return results;
     }
 }
