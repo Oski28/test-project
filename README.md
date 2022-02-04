@@ -30,10 +30,12 @@ Moreover Teacher can do everythink what Student can do.
 * Spring Security using JWT TOKEN Auth
 * Swagger2
 * Lombok
+* Spring HATEOAS
 
 ## Features
 List of features ready and TODOs for future development
 * Automatic scoring of single-choice questions
+* Hipermedia links for two controller using Spring HATEOAS
 
 ## Status
 Project is: Finished
