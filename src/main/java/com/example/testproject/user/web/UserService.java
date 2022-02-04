@@ -18,6 +18,4 @@ public interface UserService {
     boolean updateRoles(Long id, User userRole);
 
     User getAuthUser();
-
-    Page<User> getAllWithFilter(int page, int size, String column, String direction, String filter);
 }

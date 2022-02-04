@@ -2,7 +2,6 @@ package com.example.testproject.user.web;
 
 import com.example.testproject.exceptions.OldPasswordMismatchException;
 import com.example.testproject.refreshToken.web.RefreshTokenServiceImplementation;
-import com.example.testproject.role.web.RoleServiceImplementation;
 import com.example.testproject.shared.BaseService;
 import com.example.testproject.user.dto.UserPasswordDto;
 import com.example.testproject.user.model_repo.User;
@@ -28,8 +27,6 @@ public class UserServiceImplementation implements UserService, BaseService<User>
 
     private final UserRepository userRepository;
 
-    private RoleServiceImplementation roleService;
-
     private RefreshTokenServiceImplementation refreshTokenService;
 
     private final PasswordEncoder encoder;
@@ -38,11 +35,6 @@ public class UserServiceImplementation implements UserService, BaseService<User>
     public UserServiceImplementation(UserRepository userRepository, PasswordEncoder encoder) {
         this.userRepository = userRepository;
         this.encoder = encoder;
-    }
-
-    @Autowired
-    public void setRoleService(RoleServiceImplementation roleService) {
-        this.roleService = roleService;
     }
 
     @Autowired
@@ -145,9 +137,13 @@ public class UserServiceImplementation implements UserService, BaseService<User>
         return findByUsername(authentication.getName());
     }
 
-    @Override
-    public Page<User> getAllWithFilter(int page, int size, String column, String direction, String filter) {
-        //TODO
-        return null;
+
+    public Page<User> getAllWithFilter(int page, int size, String column, Sort.Direction direction, String filter) {
+        Sort sort = Sort.by(new Sort.Order(direction, column));
+        User user = getAuthUser();
+        return this.userRepository.findAllByFirstnameContainsAndEnabledTrueAndUsernameNotOrLastnameContainsAndEnabledTrueAndUsernameNot(
+                filter, user.getUsername(), filter, user.getUsername(), PageRequest.of(page, size, sort
+                ));
     }
+
 }

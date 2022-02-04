@@ -122,8 +122,8 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
 
     @Override
     public Page<Question> getAllForAuthTeacherWithFilter(int page, int size, String column, Sort.Direction sortDir,
-                                                         String filter, String name) {
-        User user = this.userService.findByUsername(name);
+                                                         String filter) {
+        User user = this.userService.getAuthUser();
         Sort sort = Sort.by(new Sort.Order(sortDir, column));
         if (filter.equals("")) {
             return this.questionRepository.getAllByUser(user, PageRequest.of(page, size, sort));
@@ -155,7 +155,7 @@ public class QuestionServiceImplementation implements BaseService<Question>, Que
             testQuestions.remove(question);
         }
         for (int i = 0; i < randQuestions.size(); i++) {
-            randQuestions.get(i).setAnswers(this.answerService.randAnswers(randQuestions.get(i).getAnswers().stream().collect(Collectors.toList()), randQuestions.get(i).getAnswers().size()).stream().collect(Collectors.toSet()));
+            randQuestions.get(i).setAnswers(new HashSet<>(this.answerService.randAnswers(new ArrayList<>(randQuestions.get(i).getAnswers()), randQuestions.get(i).getAnswers().size())));
         }
         return randQuestions;
     }

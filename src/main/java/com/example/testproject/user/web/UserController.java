@@ -1,12 +1,12 @@
 package com.example.testproject.user.web;
 
 import com.example.testproject.exceptions.DuplicateObjectException;
-import com.example.testproject.role.web.RoleService;
-import com.example.testproject.shared.BaseController;
-import com.example.testproject.shared.BaseService;
-import com.example.testproject.user.converter.UserConverter;
+import com.example.testproject.shared.*;
+import com.example.testproject.shared.hateoas_response.Embedded;
+import com.example.testproject.shared.hateoas_response.PageInfo;
+import com.example.testproject.shared.hateoas_response.PaginationAndHateoasResponse;
 import com.example.testproject.user.converter.UserRoleConverter;
-import com.example.testproject.user.converter.UserShowConverter;
+import com.example.testproject.user.assembler.UserShowDtoAssembler;
 import com.example.testproject.user.converter.UserUpdateConverter;
 import com.example.testproject.user.dto.UserPasswordDto;
 import com.example.testproject.user.dto.UserRoleDto;
@@ -16,6 +16,8 @@ import com.example.testproject.user.model_repo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,53 +31,52 @@ public class UserController extends BaseController<User> {
 
     private final UserServiceImplementation userService;
 
-    private final UserConverter userConverter;
-
-    private final UserShowConverter userShowConverter;
-
-    private final RoleService roleService;
-
     private final UserRoleConverter userRoleConverter;
 
     private final UserUpdateConverter userUpdateConverter;
 
+    private final UserShowDtoAssembler assembler;
+
     @Autowired
     public UserController(BaseService<User> service, UserServiceImplementation userService,
-                          UserConverter userConverter, UserShowConverter userShowConverter,
-                          RoleService roleService, UserRoleConverter userRoleConverter,
-                          UserUpdateConverter userUpdateConverter) {
+                          UserRoleConverter userRoleConverter, UserUpdateConverter userUpdateConverter,
+                          UserShowDtoAssembler assembler) {
         super(service);
         this.userService = userService;
-        this.userConverter = userConverter;
-        this.userShowConverter = userShowConverter;
-        this.roleService = roleService;
         this.userRoleConverter = userRoleConverter;
         this.userUpdateConverter = userUpdateConverter;
+        this.assembler = assembler;
     }
 
     /* GET */
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = "application/hal+json")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserShowDto> getOne(@PathVariable final Long id) {
-        return super.getOne(id, this.userShowConverter.toDto());
+        return ResponseEntity.ok(assembler.toModel(userService.getById(id)));
     }
 
-    @GetMapping("")
+    @GetMapping(value = "", produces = "application/hal+json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Page<UserShowDto>> getAll(@RequestParam(defaultValue = "0") final int page,
-                                                    @RequestParam(defaultValue = "20") final int size,
-                                                    @RequestParam(defaultValue = "id") final String column,
-                                                    @RequestParam(defaultValue = "ASC") final String direction,
-                                                    @RequestParam(defaultValue = "") final String filter) {
+    public ResponseEntity<PaginationAndHateoasResponse<UserShowDto>> getAll(@RequestParam(defaultValue = "0") final int page,
+                                                                            @RequestParam(defaultValue = "20") final int size,
+                                                                            @RequestParam(defaultValue = "id") final String column,
+                                                                            @RequestParam(defaultValue = "ASC") final String direction,
+                                                                            @RequestParam(defaultValue = "") final String filter) {
+        Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Page<User> userPage;
+        CollectionModel<UserShowDto> collectionModel;
         if (filter.equals("")) {
-            Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-            Page<User> userPage = this.userService.getAll(page, size, column, sortDir);
-            return ResponseEntity.ok(userPage.map(this.userShowConverter.toDto()));
+            userPage = this.userService.getAll(page, size, column, sortDir);
+            collectionModel = assembler.toCollectionModel(userPage, null);
         } else {
-            return ResponseEntity.ok(this.userService.getAllWithFilter(page, size, column, direction, filter)
-                    .map(this.userShowConverter.toDto()));
+            userPage = this.userService.getAllWithFilter(page, size, column, sortDir, filter);
+            collectionModel = assembler.toCollectionModel(userPage, filter);
         }
+        return new ResponseEntity<>(
+                new PaginationAndHateoasResponse<>(
+                        new Embedded<>(collectionModel.getContent(), new PageInfo(userPage)),
+                        collectionModel.getLinks().toList()), HttpStatus.OK);
     }
 
     /* POST */

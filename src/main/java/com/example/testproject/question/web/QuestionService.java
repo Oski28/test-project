@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface QuestionService {
     Page<Question> getAllForAuthTeacherWithFilter(int page, int size, String column, Sort.Direction sortDir,
-                                                  String filter, String name);
+                                                  String filter);
 
     List<Question> getQuestionsForTest(Long testId);
 

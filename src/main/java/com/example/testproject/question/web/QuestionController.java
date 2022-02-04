@@ -2,32 +2,33 @@ package com.example.testproject.question.web;
 
 import com.example.testproject.answer.model_repo.Answer;
 import com.example.testproject.answer.web.AnswerServiceImplementation;
+import com.example.testproject.question.assembler.QuestionShowWithoutCorrectAssembler;
 import com.example.testproject.question.converter.QuestionConverter;
-import com.example.testproject.question.converter.QuestionShowWithCorrectConverter;
-import com.example.testproject.question.converter.QuestionShowWithoutCorrectConverter;
+import com.example.testproject.question.assembler.QuestionShowWithCorrectAssembler;
 import com.example.testproject.question.dto.QuestionDto;
 import com.example.testproject.question.dto.QuestionShowWithCorrectDto;
 import com.example.testproject.question.dto.QuestionShowWithoutCorrectDto;
 import com.example.testproject.question.model_repo.Question;
 import com.example.testproject.shared.BaseController;
 import com.example.testproject.shared.BaseService;
+import com.example.testproject.shared.hateoas_response.Embedded;
+import com.example.testproject.shared.hateoas_response.PageInfo;
+import com.example.testproject.shared.hateoas_response.PaginationAndHateoasResponse;
 import com.example.testproject.user.model_repo.User;
 import com.example.testproject.user.web.UserServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/api/questions")
@@ -35,23 +36,24 @@ import java.util.stream.Collectors;
 public class QuestionController extends BaseController<Question> {
 
     private final QuestionServiceImplementation questionService;
-    private final QuestionShowWithCorrectConverter questionShowWithCorrectConverter;
-    private final QuestionShowWithoutCorrectConverter questionShowWithoutCorrectConverter;
     private final QuestionConverter questionConverter;
     private final UserServiceImplementation userService;
     private final AnswerServiceImplementation answerService;
+    private final QuestionShowWithCorrectAssembler correctAssembler;
+    private final QuestionShowWithoutCorrectAssembler withoutCorrectAssembler;
 
     @Autowired
     public QuestionController(BaseService<Question> service, QuestionServiceImplementation questionService,
-                              QuestionShowWithCorrectConverter questionShowWithCorrectConverter, QuestionShowWithoutCorrectConverter questionShowWithoutCorrectConverter, QuestionConverter questionConverter,
-                              UserServiceImplementation userService, AnswerServiceImplementation answerService) {
+                              QuestionConverter questionConverter,
+                              UserServiceImplementation userService, AnswerServiceImplementation answerService,
+                              QuestionShowWithCorrectAssembler correctAssembler, QuestionShowWithoutCorrectAssembler withoutCorrectAssembler) {
         super(service);
         this.questionService = questionService;
-        this.questionShowWithCorrectConverter = questionShowWithCorrectConverter;
-        this.questionShowWithoutCorrectConverter = questionShowWithoutCorrectConverter;
         this.questionConverter = questionConverter;
         this.userService = userService;
         this.answerService = answerService;
+        this.correctAssembler = correctAssembler;
+        this.withoutCorrectAssembler = withoutCorrectAssembler;
     }
 
     /* GET */
@@ -59,45 +61,52 @@ public class QuestionController extends BaseController<Question> {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<QuestionShowWithCorrectDto> getOne(@PathVariable final Long id) {
-        return ResponseEntity.ok(this.questionShowWithCorrectConverter.toDto().apply(this.questionService.getOne(id)));
+        return ResponseEntity.ok(correctAssembler.toModel(this.questionService.getOne(id)));
     }
 
-    @GetMapping("")
+    @GetMapping(value = "", produces = "application/hal+json")
     @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<Page<QuestionShowWithCorrectDto>> getAll(@RequestParam(defaultValue = "0") final int page,
-                                                                   @RequestParam(defaultValue = "20") final int size,
-                                                                   @RequestParam(defaultValue = "id") final String column,
-                                                                   @RequestParam(defaultValue = "ASC") final String direction) {
-        Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        return ResponseEntity.ok(this.questionService.getAll(page, size, column, sortDir).
-                map(this.questionShowWithCorrectConverter.toDto()));
-    }
-
-    @GetMapping("/teacher")
-    @PreAuthorize("hasRole('TEACHER')")
-    public ResponseEntity<Page<QuestionShowWithCorrectDto>> getAllForAuthTeacherWithFilter(@RequestParam(defaultValue = "0") final int page,
+    public ResponseEntity<PaginationAndHateoasResponse<QuestionShowWithCorrectDto>> getAll(@RequestParam(defaultValue = "0") final int page,
                                                                                            @RequestParam(defaultValue = "20") final int size,
                                                                                            @RequestParam(defaultValue = "id") final String column,
-                                                                                           @RequestParam(defaultValue = "ASC") final String direction,
-                                                                                           @RequestParam(defaultValue = "") final String filter) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                                                                                           @RequestParam(defaultValue = "ASC") final String direction) {
         Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        return ResponseEntity.ok(this.questionService.getAllForAuthTeacherWithFilter(page, size, column, sortDir, filter, authentication.getName())
-                .map(this.questionShowWithCorrectConverter.toDto()));
+        Page<Question> questionPage = this.questionService.getAll(page, size, column, sortDir);
+        CollectionModel<QuestionShowWithCorrectDto> collectionModel
+                = correctAssembler.toCollectionModel(questionPage);
+        return new ResponseEntity<>(
+                new PaginationAndHateoasResponse<>(
+                        new Embedded<>(collectionModel.getContent(), new PageInfo(questionPage)),
+                        collectionModel.getLinks().toList()), HttpStatus.OK);
     }
 
-    @GetMapping("/test/{testId}/correct")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<QuestionShowWithCorrectDto>> getQuestionsForTestWithCorrect(@PathVariable Long testId) {
-        return ResponseEntity.ok(this.questionService.getQuestionsForTest(testId).stream()
-                .map(this.questionShowWithCorrectConverter.toDto()).collect(Collectors.toList()));
+    @GetMapping(value = "/teacher", produces = "application/hal+json")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<PaginationAndHateoasResponse<QuestionShowWithCorrectDto>> getAllForAuthTeacherWithFilter(@RequestParam(defaultValue = "0") final int page,
+                                                                                                                   @RequestParam(defaultValue = "20") final int size,
+                                                                                                                   @RequestParam(defaultValue = "id") final String column,
+                                                                                                                   @RequestParam(defaultValue = "ASC") final String direction,
+                                                                                                                   @RequestParam(defaultValue = "") final String filter) {
+        Sort.Direction sortDir = direction.equals("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Page<Question> questionPage = this.questionService.getAllForAuthTeacherWithFilter(page, size, column, sortDir, filter);
+        CollectionModel<QuestionShowWithCorrectDto> collectionModel
+                = correctAssembler.toCollectionModel(questionPage);
+        return new ResponseEntity<>(
+                new PaginationAndHateoasResponse<>(
+                        new Embedded<>(collectionModel.getContent(), new PageInfo(questionPage)),
+                        collectionModel.getLinks().toList()), HttpStatus.OK);
     }
 
-    @GetMapping("/test/{testId}")
+    @GetMapping(value = "/test/{testId}/correct", produces = "application/hal+json")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<CollectionModel<QuestionShowWithCorrectDto>> getQuestionsForTestWithCorrect(@PathVariable Long testId) {
+        return ResponseEntity.ok(correctAssembler.toCollectionModel(new PageImpl<>(this.questionService.getQuestionsForTest(testId))));
+    }
+
+    @GetMapping(value = "/test/{testId}", produces = "application/hal+json")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<QuestionShowWithoutCorrectDto>> getQuestionsForTestWithoutCorrect(@PathVariable Long testId) {
-        return ResponseEntity.ok(this.questionService.getQuestionsForTest(testId).stream()
-                .map(this.questionShowWithoutCorrectConverter.toDto()).collect(Collectors.toList()));
+    public ResponseEntity<CollectionModel<QuestionShowWithoutCorrectDto>> getQuestionsForTestWithoutCorrect(@PathVariable Long testId) {
+        return ResponseEntity.ok(withoutCorrectAssembler.toCollectionModel(new PageImpl<>(this.questionService.getQuestionsForTest(testId))));
     }
 
     /* POST */

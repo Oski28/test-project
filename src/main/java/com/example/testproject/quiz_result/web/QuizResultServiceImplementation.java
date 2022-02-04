@@ -70,7 +70,7 @@ public class QuizResultServiceImplementation implements BaseService<QuizResult>,
         if (isExists(id)) {
             User user = userService.getAuthUser();
             QuizResult quizResult = this.quizResultRepository.getById(id);
-            if (!quizResult.getUser().equals(user) || !quizResult.getTest().getUser().equals(user)) {
+            if (!quizResult.getUser().equals(user) && !quizResult.getTest().getUser().equals(user)) {
                 throw new OperationAccessDeniedException("Nie masz uprawnień do poglądu rozwiązanego testu.");
             }
             if (quizResult.getTest().getStatus().equals(TestStatus.TO_RATE)) {

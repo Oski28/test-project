@@ -1,21 +1,16 @@
 package com.example.testproject.question.dto;
 
-import com.example.testproject.answer.dto.AnswerShowWithCorrectDto;
-import com.example.testproject.question.model_repo.QuestionType;
+import com.example.testproject.answer.dto.AnswerShowDto;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.*;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class QuestionShowWithCorrectDto {
+public class QuestionShowWithCorrectDto extends QuestionShowDto {
 
-    private Long id;
-    private String text;
-    private Integer points;
-    @Enumerated(EnumType.STRING)
-    private QuestionType type;
-    private List<String> testsName;
-    private List<AnswerShowWithCorrectDto> answers;
+    private List<AnswerShowDto> answers;
 
 }

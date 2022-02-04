@@ -4,11 +4,18 @@ import com.example.testproject.role.converter.RoleShowConverter;
 import com.example.testproject.shared.BaseConverter;
 import com.example.testproject.user.dto.UserShowDto;
 import com.example.testproject.user.model_repo.User;
+import com.example.testproject.user.web.UserController;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Service
 @RequiredArgsConstructor
